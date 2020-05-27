@@ -36,6 +36,9 @@ function App() {
   // single amount
   const [amount, setAmount] = useState('');
 
+  // alert
+  const [alert, setAlert] = useState({ show: false });
+
   // **************** functionality **************************
 
   const handleCharge = (e) => {
@@ -46,20 +49,54 @@ function App() {
     setAmount(e.target.value);
   };
 
+  // handle alert
+  const handleAlert = ({ type, text }) => {
+    setAlert({ show: true, type, text });
+    setTimeout(() => {
+      setAlert({ show: false });
+    }, 3000);
+  };
+
+  // handle submit
   const handleSubmit = (e) => {
     e.preventDefault();
     if (charge !== '' && amount > 0) {
       const singleExpense = { id: uuid(), charge, amount };
       setExpenses([...expenses, singleExpense]);
+      handleAlert({ type: 'success', text: 'item added' });
       setCharge('');
       setAmount('');
     } else {
+      handleAlert({
+        type: 'danger',
+        text: `charge cant be empty value and amount value has to be bigger than zero`,
+      });
     }
+  };
+
+  // clear all items
+  const clearItems = () => {
+    setExpenses([]);
+    console.log('cleared all items');
+    handleAlert({ type: 'danger', text: 'all items deleted' });
+  };
+
+  // handle delete
+  const handleDelete = (id) => {
+    let tempExpenses = expenses.filter((item) => item.id !== id);
+    setExpenses(tempExpenses);
+    handleAlert({ type: 'danger', text: 'item deleted' });
+  };
+
+  // handle edit
+  const handleEdit = (id) => {
+    console.log(`item edited: ${id}`);
   };
 
   return (
     <>
-      <Alert />
+      {alert.show && <Alert type={alert.type} text={alert.text} />}
+
       <h1>Budget calculator</h1>
       <main className="App">
         <ExpenseForm
@@ -69,7 +106,12 @@ function App() {
           handleCharge={handleCharge}
           handleSubmit={handleSubmit}
         />
-        <ExpenseList expenses={expenses} />
+        <ExpenseList
+          expenses={expenses}
+          handleDelete={handleDelete}
+          handleEdit={handleEdit}
+          clearItems={clearItems}
+        />
       </main>
       <h1>
         total spending:{' '}
